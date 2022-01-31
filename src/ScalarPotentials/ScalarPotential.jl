@@ -48,7 +48,7 @@ function get_2π_potential(sp::ScalarPotential{T, 3, Cylindrical}, axφ::Discret
     for idx_n in 1:n
         for il in 1:l
             idx::Int = il + (idx_n - 1) * l
-            new_ticks[idx] = (idx_n - 1) * Δφ + axφ.ticks[il]
+            new_ticks[idx] = mod((idx_n - 1) * Δφ + axφ.ticks[il],2π)
             new_pot[:, idx, :] = sp[:, il, :]
         end
     end
