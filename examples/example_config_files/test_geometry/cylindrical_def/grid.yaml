@@ -1,0 +1,16 @@
+grid:
+  coordinates: cylindrical
+  axes:
+    phi:
+      boundaries: periodic
+      to: 0
+      from: 360
+    r:
+      boundaries: inf
+      to: 10
+    z:
+      boundaries:
+        left: inf
+        right: inf
+      to: 10
+      from: -10

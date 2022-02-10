@@ -1,0 +1,36 @@
+union:
+  - intersection:
+      - box:
+          hX: 1.5
+          hY: 1.5
+          hZ: 1.5
+          origin:
+            x: 7.5
+            y: 7.5
+            z: -5.5
+      - difference:
+        - box:
+            widths: [3, 3, 3]
+            origin:
+              x: 8
+              y: 8
+              z: -6
+        - box:
+            x:
+              from: 7
+              to: 9
+            y:
+              from: 7
+              to: 9
+            z:
+              from: -7
+              to: -5
+
+  - box:
+      halfwidths: [1.5, 1.5, 1.5]
+      origin:
+        x: 7.5
+        y: 7.5
+        z: -1
+      rotate:
+        Z: 20

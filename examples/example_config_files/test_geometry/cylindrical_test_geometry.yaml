@@ -1,0 +1,47 @@
+name: Geometry for Tests (cylindrical)
+include: units.yaml
+include: cylindrical_def/grid.yaml
+medium: vacuum
+detectors:
+- semiconductor:
+    include: cylindrical_def/semiconductor_properties.yaml
+    geometry:
+      union:
+      - tube:
+          r:
+            from: 0
+            to: 15
+          phi:
+            from: 0
+            to: 360
+          z: 18
+      - include: primitives/box_primitives.yaml
+      #Cone volume primitives
+      - include: primitives/cone_primitives.yaml
+      #Ellipsoid volume primitives
+      - include: primitives/ellipsoid_primitives.yaml
+      #Prism volume primitives
+      - include: primitives/prism_primitives.yaml
+      #Torus volume primitives 
+      - include: primitives/torus_primitives.yaml  
+  contacts:
+  - name: Top Contact
+    material: HPGe
+    id: 1
+    potential: 3000
+    geometry:
+      tube:
+        r: 15
+        h: 1
+        origin:
+          z: 9.5
+  - name: Bottom Contact
+    material: HPGe
+    id: 2
+    potential: 0
+    geometry:
+      tube:
+        r: 15
+        h: 1
+        origin:
+          z: -9.5

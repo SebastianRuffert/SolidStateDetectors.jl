@@ -1,0 +1,25 @@
+union:
+  - cone:
+      r:
+        bottom:
+          from: 0
+          to: 3
+        top:
+          from: 0
+          to: 0
+      phi:
+        from: 0.0
+        to: 360
+      h: 3.0
+      origin: [6,-6,2]
+  - tube:
+      r:
+        from: 1
+        to: 3
+      phi:
+        from: 0
+        to: 180
+      z: 3
+      origin: [6,-6,5]
+      rotation:
+        M: [1, 0, 0, 0, 0, -1, 0, 1, 0]

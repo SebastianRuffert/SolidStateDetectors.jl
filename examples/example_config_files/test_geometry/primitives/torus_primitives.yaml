@@ -1,0 +1,15 @@
+union:     
+  - torus:
+      r_torus: 3
+      r_tube: 2
+      theta: 
+           from: 0
+           to: 180
+      origin: [-3,3,-3]
+      
+  - torus:
+      r_torus: 3
+      r_tube: 1
+      origin: [-3,3,3]
+      rotation:
+        M: [1, 0, 0, 0, 0, -1, 0, 1, 0]

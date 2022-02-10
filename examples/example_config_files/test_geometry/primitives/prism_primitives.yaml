@@ -1,0 +1,19 @@
+union:
+  - HexagonalPrism:
+      r: 3
+      h: 3
+      origin: [-5,-5,-6]
+      rotation:
+        M: [1, 0, 0, 0, 0, -1, 0, 1, 0]
+  - PentagonalPrism:
+      r: 3
+      z: 3
+      origin: [-5,-5,-2]
+  - QuadranglePrism:
+      r: 3
+      z: 3
+      origin: [-5,-5,2]
+  - TriangularPrism:
+      r: 3
+      z: 3
+      origin: [-5,-5,6]

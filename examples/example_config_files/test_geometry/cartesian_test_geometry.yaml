@@ -1,0 +1,53 @@
+name: Geometry for Tests (cartesian)
+include: units.yaml
+include: cartesian_def/grid.yaml
+medium: vacuum
+detectors:
+- semiconductor:
+    include: cartesian_def/semiconductor_properties.yaml
+    geometry:
+      union:
+      #Semiconductor
+      - box:
+            widths: [20, 20, 18]
+            origin:
+              x: 0
+              y: 0
+              z: 0        
+      #Box volume primitives
+      - include: primitives/box_primitives.yaml
+      #Cone volume primitives
+      - include: primitives/cone_primitives.yaml
+      #Ellipsoid volume primitives
+      - include: primitives/ellipsoid_primitives.yaml
+      #Prism volume primitives
+      - include: primitives/prism_primitives.yaml
+      #Torus volume primitives 
+      - include: primitives/torus_primitives.yaml
+              
+
+  contacts:
+    - name: Top Contact
+      material: HPGe
+      potential: 3000
+      id: 1
+      geometry:
+        box:
+          widths: [20, 20, 1]
+          origin:
+            x: 0
+            y: 0
+            z: 9.5
+    - name: Bottom Contact
+      material: HPGe
+      potential: 0
+      id: 2
+      geometry:
+        box:
+          widths: [20, 20, 1]
+          origin:
+            x: 0
+            y: 0
+            z: -9.5
+
+    
