@@ -25,8 +25,23 @@ end
 T = Float32
 
 @testset "Test real detectors" begin
-    @testset "Simulate test detector" begin
-        sim = Simulation{T}(SSD_examples[:TestDetector])
+    @testset "Simulate cartesian test detector" begin
+        sim = Simulation{T}(SSD_examples[:TestDetectorCart])
+        simulate!(sim, convergence_limit = 1e-6, refinement_limits = [0.2, 0.1], verbose = false)
+        evt = Event(CartesianPoint.([CartesianPoint{T}(0,0,0)]))
+        simulate!(evt, sim, Δt = 1e-9, max_nsteps = 10000)
+        signalsum = T(0)
+        for i in 1:length(evt.waveforms)
+            signalsum += abs(ustrip(evt.waveforms[i].value[end]))
+        end
+        signalsum *= inv(ustrip(SolidStateDetectors._convert_internal_energy_to_external_charge(sim.detector.semiconductor.material)))
+        @info signalsum
+        @test isapprox( signalsum, T(2), atol = 5e-3 )
+        nt = NamedTuple(sim)
+        @test sim == Simulation(nt)
+    end
+    @testset "Simulate cylindrical test detector" begin
+        sim = Simulation{T}(SSD_examples[:TestDetectorCyl])
         simulate!(sim, convergence_limit = 1e-6, refinement_limits = [0.2, 0.1], verbose = false)
         evt = Event(CartesianPoint.([CartesianPoint{T}(0,0,0)]))
         simulate!(evt, sim, Δt = 1e-9, max_nsteps = 10000)
