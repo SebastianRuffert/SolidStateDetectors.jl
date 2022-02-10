@@ -17,13 +17,13 @@ detectors:
       #Box volume primitives
       - include: primitives/box_primitives.yaml
       #Cone volume primitives
-      - include: primitives/cone_primitives.yaml
-      #Ellipsoid volume primitives
-      - include: primitives/ellipsoid_primitives.yaml
-      #Prism volume primitives
+      # - include: primitives/cone_primitives.yaml
+      # #Ellipsoid volume primitives
+      # - include: primitives/ellipsoid_primitives.yaml
+      # #Prism volume primitives
       - include: primitives/prism_primitives.yaml
-      #Torus volume primitives 
-      - include: primitives/torus_primitives.yaml
+      # #Torus volume primitives 
+      # - include: primitives/torus_primitives.yaml
               
 
   contacts:
