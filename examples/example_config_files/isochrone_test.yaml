@@ -46,6 +46,13 @@ detectors:
             h: 0.1
             translate:
               z: 0.05
+        symmetry:
+          phi:
+            left: reflecting
+            right: fixed
+          r:
+            left: fixed
+            right: fixed
       - name: "n contact"
         id: 2
         material: "HPGe"
