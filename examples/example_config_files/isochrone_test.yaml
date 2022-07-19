@@ -21,6 +21,13 @@ grid:
         left: "inf"
         right: "inf"
 medium: "vacuum"
+symmetry:
+  2:
+    mirror_symmetry:
+      phi: 120
+  1:
+    mirror_symmetry:
+      phi: 180
 detectors:
   - semiconductor:
       material: "HPGe"
@@ -46,13 +53,6 @@ detectors:
             h: 0.1
             translate:
               z: 0.05
-        symmetry:
-          phi:
-            left: reflecting
-            right: fixed
-          r:
-            left: fixed
-            right: fixed
       - name: "n contact"
         id: 2
         material: "HPGe"
