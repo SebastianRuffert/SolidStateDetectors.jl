@@ -38,6 +38,7 @@ mutable struct Simulation{T <: SSDFloat, CS <: AbstractCoordinateSystem} <: Abst
     electric_potential::Union{ElectricPotential{T}, Missing}
     weighting_potentials::Vector{Any}
     electric_field::Union{ElectricField{T}, Missing}
+    symmetry::NamedTuple
 end
 
 function Simulation{T,CS}() where {T <: SSDFloat, CS <: AbstractCoordinateSystem}
@@ -54,7 +55,8 @@ function Simulation{T,CS}() where {T <: SSDFloat, CS <: AbstractCoordinateSystem
         missing,
         missing,
         [missing],
-        missing
+        missing,
+        NamedTuple()
     )
 end
 
@@ -72,7 +74,8 @@ function NamedTuple(sim::Simulation{T}) where {T <: SSDFloat}
         ϵ_r = NamedTuple(sim.ϵ_r),
         point_types = NamedTuple(sim.point_types),
         electric_field = NamedTuple(sim.electric_field),
-        weighting_potentials = NamedTuple{Tuple(Symbol.(wpots_strings))}(NamedTuple.(sim.weighting_potentials))
+        weighting_potentials = NamedTuple{Tuple(Symbol.(wpots_strings))}(NamedTuple.(sim.weighting_potentials)),
+        symmetry = NamedTuple(sim.symmetry)
     )
     return nt
 end
@@ -108,6 +111,7 @@ function Simulation(nt::NamedTuple)
     else
         [missing for contact in sim.detector.contacts]
     end
+    sim.symmetry = haskey(nt, :symmetry) ? Symmetry(nt.symmetry) : NamedTuple()
     return sim
 end
 Base.convert(T::Type{Simulation}, x::NamedTuple) = T(x)
@@ -180,6 +184,7 @@ function Simulation{T}(dict::Dict)::Simulation{T} where {T <: SSDFloat}
         end
     end
     sim.weighting_potentials = Missing[ missing for i in 1:length(sim.detector.contacts)]
+    sim.symmetry = dict["symmetry"]
     return sim
 end
 
@@ -457,16 +462,21 @@ function _guess_optimal_number_of_threads_for_SOR(gs::NTuple{3, Integer}, max_nt
 end
 
 function _get_grid_for_WP(sim::Simulation{T}, contact_id::Int) where T
-    symmetry = sim.detector.contacts[contact_id].symmetry
-    if symmetry == :reflecting
-        intervals = sim.world.intervals
-        return Grid(sim)
-    elseif symmetry == :periodic
-        return Grid(sim)
-    else
-        return Grid(sim)
-    end
+    symmetry = sim.symmetry[Symbol(string(contact_id))]
+    world = _get_symmetry_constrained_world(sim, symmetry)
+    Grid(sim, world = world)
 end
+
+function _get_symmetry_constrained_world(sim::Simulation{T}, symmetry::MirrorSymmetry{T}) where {T}
+    intervals = []
+    for (idx, interval) in sim.world.intervals
+        append!(intervals, SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[1])...}(sim.world.intervals[idx].left,
+            symmetry.plane.origin[idx])) # That is not yet mathematically correct, just put that here to orientate myself
+    end
+    world = World{world_types(sim.world)...}(intervals)
+end
+
+world_types(world::World{T,N,S}) where {T,N,S} = (T,N,S)   
 
 """
     apply_initial_state!(sim::Simulation{T}, ::Type{ElectricPotential}, grid::Grid{T} = Grid(sim);
