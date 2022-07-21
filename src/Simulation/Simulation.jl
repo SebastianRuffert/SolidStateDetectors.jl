@@ -480,7 +480,8 @@ end
 function Grid(sim::Simulation{T, Cylindrical}, symmetry::MirrorSymmetry{T}) where {T}
     r_interval = sim.world.intervals[1]
     φ_interval = symmetry.symmetry_plane.normal[2] == 0 ? sim.world.intervals[2] : 
-        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[2])...}(sim.world.intervals[2].left, symmetry.symmetry_plane.origin[2])
+        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[2])...}(sim.world.intervals[2].left,
+        CylindricalPoint(symmetry.symmetry_plane.origin)[2])
     z_interval = symmetry.symmetry_plane.normal[3] == 0 ? sim.world.intervals[3] : 
         SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[3])...}(sim.world.intervals[3].left, symmetry.symmetry_plane.origin[3])
     world = World{world_types(sim.world)...}((r_interval, φ_interval, z_interval))

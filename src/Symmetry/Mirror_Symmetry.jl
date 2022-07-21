@@ -14,7 +14,7 @@ end
 
 function MirrorSymmetry(axis, value::T) where {T<: SSDFloat}
     if axis == "φ"
-        eps = 1e-8
+        eps = 1e-7
         MirrorSymmetry{T}(CylindricalPoint{T}(r=1, φ = value), CylindricalVector{T}(0,eps,0))
     elseif axis == "x"
         MirrorSymmetry{T}(CartesianPoint{T}(x = value), CartesianVector{T}(1,0,0))
