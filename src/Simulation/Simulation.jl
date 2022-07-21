@@ -38,7 +38,7 @@ mutable struct Simulation{T <: SSDFloat, CS <: AbstractCoordinateSystem} <: Abst
     electric_potential::Union{ElectricPotential{T}, Missing}
     weighting_potentials::Vector{Any}
     electric_field::Union{ElectricField{T}, Missing}
-    symmetry::NamedTuple
+    #symmetry::NamedTuple
 end
 
 function Simulation{T,CS}() where {T <: SSDFloat, CS <: AbstractCoordinateSystem}
@@ -56,7 +56,7 @@ function Simulation{T,CS}() where {T <: SSDFloat, CS <: AbstractCoordinateSystem
         missing,
         [missing],
         missing,
-        NamedTuple()
+        #NamedTuple()
     )
 end
 
@@ -75,7 +75,7 @@ function NamedTuple(sim::Simulation{T}) where {T <: SSDFloat}
         point_types = NamedTuple(sim.point_types),
         electric_field = NamedTuple(sim.electric_field),
         weighting_potentials = NamedTuple{Tuple(Symbol.(wpots_strings))}(NamedTuple.(sim.weighting_potentials)),
-        symmetry = NamedTuple(sim.symmetry)
+        #symmetry = NamedTuple(sim.symmetry)
     )
     return nt
 end
@@ -111,7 +111,7 @@ function Simulation(nt::NamedTuple)
     else
         [missing for contact in sim.detector.contacts]
     end
-    sim.symmetry = haskey(nt, :symmetry) ? Symmetry(nt.symmetry) : NamedTuple()
+    #sim.symmetry = haskey(nt, :symmetry) ? Symmetry(nt) : NamedTuple()
     return sim
 end
 Base.convert(T::Type{Simulation}, x::NamedTuple) = T(x)
@@ -184,7 +184,7 @@ function Simulation{T}(dict::Dict)::Simulation{T} where {T <: SSDFloat}
         end
     end
     sim.weighting_potentials = Missing[ missing for i in 1:length(sim.detector.contacts)]
-    sim.symmetry = dict["symmetry"]
+    #sim.symmetry = merge(NamedTuple(), dict["symmetry"])
     return sim
 end
 
@@ -463,17 +463,28 @@ end
 
 function _get_grid_for_WP(sim::Simulation{T}, contact_id::Int) where T
     symmetry = sim.symmetry[Symbol(string(contact_id))]
-    world = _get_symmetry_constrained_world(sim, symmetry)
+    _get_symmetry_constrained_world(sim, symmetry)
+end
+
+function Grid(sim::Simulation{T, Cartesian}, symmetry::MirrorSymmetry{T}) where {T}
+    x_interval = symmetry.symmetry_plane.normal[1] == 0 ? sim.world.intervals[1] : 
+        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[1])...}(sim.world.intervals[1].left, symmetry.symmetry_plane.origin[1])
+    y_interval = symmetry.symmetry_plane.normal[2] == 0 ? sim.world.intervals[2] : 
+        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[2])...}(sim.world.intervals[2].left, symmetry.symmetry_plane.origin[2])
+    z_interval = symmetry.symmetry_plane.normal[3] == 0 ? sim.world.intervals[3] : 
+        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[3])...}(sim.world.intervals[3].left, symmetry.symmetry_plane.origin[3])
+    world = World{world_types(sim.world)...}((x_interval, y_interval, z_interval))
     Grid(sim, world = world)
 end
 
-function _get_symmetry_constrained_world(sim::Simulation{T}, symmetry::MirrorSymmetry{T}) where {T}
-    intervals = []
-    for (idx, interval) in sim.world.intervals
-        append!(intervals, SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[1])...}(sim.world.intervals[idx].left,
-            symmetry.plane.origin[idx])) # That is not yet mathematically correct, just put that here to orientate myself
-    end
-    world = World{world_types(sim.world)...}(intervals)
+function Grid(sim::Simulation{T, Cylindrical}, symmetry::MirrorSymmetry{T}) where {T}
+    r_interval = sim.world.intervals[1]
+    φ_interval = symmetry.symmetry_plane.normal[2] == 0 ? sim.world.intervals[2] : 
+        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[2])...}(sim.world.intervals[2].left, symmetry.symmetry_plane.origin[2])
+    z_interval = symmetry.symmetry_plane.normal[3] == 0 ? sim.world.intervals[3] : 
+        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[3])...}(sim.world.intervals[3].left, symmetry.symmetry_plane.origin[3])
+    world = World{world_types(sim.world)...}((r_interval, φ_interval, z_interval))
+    Grid(sim, world = world)
 end
 
 world_types(world::World{T,N,S}) where {T,N,S} = (T,N,S)   
