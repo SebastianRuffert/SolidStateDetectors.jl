@@ -38,7 +38,7 @@ mutable struct Simulation{T <: SSDFloat, CS <: AbstractCoordinateSystem} <: Abst
     electric_potential::Union{ElectricPotential{T}, Missing}
     weighting_potentials::Vector{Any}
     electric_field::Union{ElectricField{T}, Missing}
-    #symmetry::NamedTuple
+    symmetry::NamedTuple
 end
 
 function Simulation{T,CS}() where {T <: SSDFloat, CS <: AbstractCoordinateSystem}
@@ -56,7 +56,7 @@ function Simulation{T,CS}() where {T <: SSDFloat, CS <: AbstractCoordinateSystem
         missing,
         [missing],
         missing,
-        #NamedTuple()
+        NamedTuple()
     )
 end
 
@@ -75,7 +75,7 @@ function NamedTuple(sim::Simulation{T}) where {T <: SSDFloat}
         point_types = NamedTuple(sim.point_types),
         electric_field = NamedTuple(sim.electric_field),
         weighting_potentials = NamedTuple{Tuple(Symbol.(wpots_strings))}(NamedTuple.(sim.weighting_potentials)),
-        #symmetry = NamedTuple(sim.symmetry)
+        symmetry = NamedTuple(sim.symmetry)
     )
     return nt
 end
@@ -111,7 +111,7 @@ function Simulation(nt::NamedTuple)
     else
         [missing for contact in sim.detector.contacts]
     end
-    #sim.symmetry = haskey(nt, :symmetry) ? Symmetry(nt) : NamedTuple()
+    sim.symmetry = haskey(nt, :symmetry) ? nt.symmetry : NamedTuple()
     return sim
 end
 Base.convert(T::Type{Simulation}, x::NamedTuple) = T(x)
@@ -184,7 +184,7 @@ function Simulation{T}(dict::Dict)::Simulation{T} where {T <: SSDFloat}
         end
     end
     sim.weighting_potentials = Missing[ missing for i in 1:length(sim.detector.contacts)]
-    #sim.symmetry = merge(NamedTuple(), dict["symmetry"])
+    sim.symmetry = Symmetry{T}(dict)
     return sim
 end
 
@@ -462,9 +462,11 @@ function _guess_optimal_number_of_threads_for_SOR(gs::NTuple{3, Integer}, max_nt
 end
 
 function _get_grid_for_WP(sim::Simulation{T}, contact_id::Int) where T
-    symmetry = sim.symmetry[Symbol(string(contact_id))]
-    _get_symmetry_constrained_world(sim, symmetry)
+    symmetry = sim.symmetry[Symbol("contact_" * string(contact_id))]
+    Grid(sim, symmetry)
 end
+
+world_types(world::World{T,N,S}) where {T,N,S} = (T,N,S) 
 
 function Grid(sim::Simulation{T, Cartesian}, symmetry::MirrorSymmetry{T}) where {T}
     x_interval = symmetry.symmetry_plane.normal[1] == 0 ? sim.world.intervals[1] : 
@@ -486,9 +488,7 @@ function Grid(sim::Simulation{T, Cylindrical}, symmetry::MirrorSymmetry{T}) wher
         SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[3])...}(sim.world.intervals[3].left, symmetry.symmetry_plane.origin[3])
     world = World{world_types(sim.world)...}((r_interval, φ_interval, z_interval))
     Grid(sim, world = world)
-end
-
-world_types(world::World{T,N,S}) where {T,N,S} = (T,N,S)   
+end  
 
 """
     apply_initial_state!(sim::Simulation{T}, ::Type{ElectricPotential}, grid::Grid{T} = Grid(sim);
@@ -554,7 +554,7 @@ It overwrites `sim.weighting_potentials[contact_id]` with the fixed values on th
 apply_initial_state!(sim, WeightingPotential, 1) # =>  applies initial state for weighting potential of contact with id 1
 ```
 """
-function apply_initial_state!(sim::Simulation{T}, ::Type{WeightingPotential}, contact_id::Int, grid::Grid{T} = _get_grid_for_WP(sim, contact_id);
+function apply_initial_state!(sim::Simulation{T}, ::Type{WeightingPotential}, contact_id::Int; grid::Grid{T} = _get_grid_for_WP(sim, contact_id),
         not_only_paint_contacts::Bool = true, paint_contacts::Bool = true, depletion_handling::Bool = false)::Nothing where {T <: SSDFloat}
     pcs = PotentialCalculationSetup(
         sim.detector, 
