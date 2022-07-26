@@ -258,6 +258,16 @@ end
     @test all(broadcast(dp -> dp.e_path[end] in sim.detector.contacts[2], ev.drift_paths))
 end
 
+@testset "Symmetry handling begin" begin
+    sim_no_symmetry = Simulation(SSD_examples[:InvertedCoax])
+    sim_with_symmetry = Simulation(SSD_examples[:InvertedCoax])
+    SolidStateDetectors.apply_initial_state!(sim_no_symmetry, WeightingPotential, 1) 
+    SolidStateDetectors.update_till_convergence!(sim_no_symmetry, WeightingPotential, 1, 1e-6)
+    SolidStateDetectors.apply_initial_state!(sim_with_symmetry, WeightingPotential, 1) 
+    SolidStateDetectors.update_till_convergence!(sim_with_symmetry, WeightingPotential, 1, 1e-6)
+    @test sim_no_symmetry.weighting_potentials[1][2,6,2] == sim_no_symmetry.weighting_potentials[1][2,6,2]
+end
+
 @testset "ADLChargeDriftModel" begin
     include("ADLChargeDriftModel.jl")
 end

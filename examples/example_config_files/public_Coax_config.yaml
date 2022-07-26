@@ -12,10 +12,10 @@ grid:
       boundaries: inf
     phi:
       from: 0
-      to: 30
+      to: 60
       boundaries:
         left: periodic
-        right: reflecting
+        right: periodic
     z:
       from: -10
       to: 90
@@ -23,6 +23,10 @@ grid:
         left: inf
         right: inf
 medium: vacuum
+symmetry:
+  contact_1: 
+    mirror:
+      phi: 30
 detectors:
 - semiconductor:
     material: HPGe
