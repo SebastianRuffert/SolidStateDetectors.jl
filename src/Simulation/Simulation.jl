@@ -470,11 +470,17 @@ world_types(world::World{T,N,S}) where {T,N,S} = (T,N,S)
 
 function Grid(sim::Simulation{T, Cartesian}, symmetry::MirrorSymmetry{T}) where {T}
     x_interval = symmetry.symmetry_plane.normal[1] == 0 ? sim.world.intervals[1] : 
-        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[1])...}(sim.world.intervals[1].left, symmetry.symmetry_plane.origin[1])
+        SSDInterval{T, SolidStateDetectors.get_boundary_types(sim.world.intervals[1])[1], :closed,
+        SolidStateDetectors.get_boundary_types(sim.world.intervals[1])[3], :reflecting}(sim.world.intervals[1].left, 
+        symmetry.symmetry_plane.origin[1])
     y_interval = symmetry.symmetry_plane.normal[2] == 0 ? sim.world.intervals[2] : 
-        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[2])...}(sim.world.intervals[2].left, symmetry.symmetry_plane.origin[2])
+        SSDInterval{T, SolidStateDetectors.get_boundary_types(sim.world.intervals[2])[1], :closed,
+        SolidStateDetectors.get_boundary_types(sim.world.intervals[2])[3], :reflecting}(sim.world.intervals[2].left, 
+        symmetry.symmetry_plane.origin[2])
     z_interval = symmetry.symmetry_plane.normal[3] == 0 ? sim.world.intervals[3] : 
-        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[3])...}(sim.world.intervals[3].left, symmetry.symmetry_plane.origin[3])
+        SSDInterval{T, SolidStateDetectors.get_boundary_types(sim.world.intervals[3])[1], :closed,
+        SolidStateDetectors.get_boundary_types(sim.world.intervals[3])[3], :reflecting}(sim.world.intervals[3].left, 
+        symmetry.symmetry_plane.origin[3])
     world = World{world_types(sim.world)...}((x_interval, y_interval, z_interval))
     Grid(sim, world = world)
 end
@@ -482,10 +488,12 @@ end
 function Grid(sim::Simulation{T, Cylindrical}, symmetry::MirrorSymmetry{T}) where {T}
     r_interval = sim.world.intervals[1]
     φ_interval = symmetry.symmetry_plane.normal[2] == 0 ? sim.world.intervals[2] : 
-        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[2])...}(sim.world.intervals[2].left,
+        SSDInterval{T, :closed, :closed, :reflecting, :reflecting}(sim.world.intervals[2].left,
         CylindricalPoint(symmetry.symmetry_plane.origin)[2])
     z_interval = symmetry.symmetry_plane.normal[3] == 0 ? sim.world.intervals[3] : 
-        SSDInterval{T,SolidStateDetectors.get_boundary_types(sim.world.intervals[3])...}(sim.world.intervals[3].left, symmetry.symmetry_plane.origin[3])
+        SSDInterval{T, SolidStateDetectors.get_boundary_types(sim.world.intervals[3])[1], :closed,
+        SolidStateDetectors.get_boundary_types(sim.world.intervals[3])[3], :reflecting}(sim.world.intervals[3].left, 
+        symmetry.symmetry_plane.origin[3])
     world = World{world_types(sim.world)...}((r_interval, φ_interval, z_interval))
     Grid(sim, world = world)
 end  
@@ -554,7 +562,7 @@ It overwrites `sim.weighting_potentials[contact_id]` with the fixed values on th
 apply_initial_state!(sim, WeightingPotential, 1) # =>  applies initial state for weighting potential of contact with id 1
 ```
 """
-function apply_initial_state!(sim::Simulation{T}, ::Type{WeightingPotential}, contact_id::Int; grid::Grid{T} = _get_grid_for_WP(sim, contact_id),
+function apply_initial_state!(sim::Simulation{T}, ::Type{WeightingPotential}, contact_id::Int, grid::Grid{T} = _get_grid_for_WP(sim, contact_id);
         not_only_paint_contacts::Bool = true, paint_contacts::Bool = true, depletion_handling::Bool = false)::Nothing where {T <: SSDFloat}
     pcs = PotentialCalculationSetup(
         sim.detector, 
