@@ -12,17 +12,19 @@ function MirrorSymmetry{T}(origin::CartesianPoint{T}, normal::CartesianVector{T}
     MirrorSymmetry{T}(Plane{T}(origin, normal))
 end
 
-function MirrorSymmetry(axis, value::T) where {T<: SSDFloat}
-    println(axis)
+function MirrorSymmetry(axis, value::T, units::NamedTuple = default_unit_tuple()) where {T<: SSDFloat}
+    length_unit = units.length
+    angle_unit = units.angle
     if axis == "phi" || axis == "φ"
         eps = 1e-5
-        MirrorSymmetry{T}(CylindricalPoint{T}(r=1, φ = value/360 * 2π), CylindricalVector{T}(0,eps,0))
+        MirrorSymmetry{T}(CylindricalPoint{T}(r=1, φ = to_internal_units(value * angle_unit)),
+            CylindricalVector{T}(0, eps, 0))
     elseif axis == "x"
-        MirrorSymmetry{T}(CartesianPoint{T}(x = value), CartesianVector{T}(1,0,0))
+        MirrorSymmetry{T}(CartesianPoint{T}(x = to_internal_units(value * length_unit)), CartesianVector{T}(1,0,0))
     elseif axis == "y"
-        MirrorSymmetry{T}(CartesianPoint{T}(y = value), CartesianVector{T}(0,1,0))
+        MirrorSymmetry{T}(CartesianPoint{T}(y = to_internal_units(value * length_unit)), CartesianVector{T}(0,1,0))
     elseif axis == "z"
-        MirrorSymmetry{T}(CartesianPoint{T}(z = value), CartesianVector{T}(0,0,1))
+        MirrorSymmetry{T}(CartesianPoint{T}(z = to_internal_units(value * length_unit)), CartesianVector{T}(0,0,1))
     elseif axis == "r"
         @error "Mirror symmetry along r not defined"
     else

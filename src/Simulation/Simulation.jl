@@ -184,7 +184,7 @@ function Simulation{T}(dict::Dict)::Simulation{T} where {T <: SSDFloat}
         end
     end
     sim.weighting_potentials = Missing[ missing for i in 1:length(sim.detector.contacts)]
-    sim.symmetry = Symmetry{T}(dict)
+    sim.symmetry = Symmetry{T}(dict, sim.input_units)
     return sim
 end
 
